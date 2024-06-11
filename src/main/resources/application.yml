@@ -1,0 +1,8 @@
+
+# 서버포트번호
+server:
+   port: 8093
+
+spring:
+  profiles:
+    active: dev

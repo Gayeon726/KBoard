@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lec.spring.repository.AttachmentRepository">
+
+    <!-- 특정 글의 첨부파일 INSERT -->
+    <insert id="insert" flushCache="true"
+        parameterType="arraylist"> <!-- 배열이거나 리스트인 것 뽑아냄 -->
+
+        INSERT INTO t5_attachment(sourcename, filename, post_id)
+        VALUES
+            <foreach collection="list" item="e" separator=","> <!-- List<Map<String, Objects>> list -->
+                (#{e.sourcename}, #{e.filename}, #{param2})
+            </foreach>
+    </insert>
+
+    <!-- 첨부파일 저장 INSERT -->
+    <insert id="save" flushCache="true"
+        parameterType="com.lec.spring.domain.Attachment">
+        INSERT INTO t5_attachment(sourcename,filename,post_id)
+        VALUES (#{sourcename}, #{filename}, #{post_id})
+    </insert>
+
+    <!-- 중복 sql -->
+    <sql id="SELECTFILE">
+        SELECT id, sourcename, filename, post_id
+        FROM t5_attachment
+        WHERE 1 = 1
+    </sql>
+
+    <!-- 특정 글(postId) 의 첨부파일들 SELECT -->
+    <select id="findByPost" resultType="com.lec.spring.domain.Attachment">
+        <include refid="SELECTFILE"/>
+        AND post_id = #{param1}
+        ORDER BY id ASC
+    </select>
+
+    <!-- 특정 첨부파일(id) 한개 SELECT -->
+    <select id="findById" resultType="com.lec.spring.domain.Attachment">
+        <include refid="SELECTFILE"/>
+        AND id = #{id}
+    </select>
+
+    <!-- 선택된 첨부파일들 SELECT -->
+    <select id="findByIds" resultType="com.lec.spring.domain.Attachment"
+        parameterType="arraylist"> <!-- parameterType="java.util.ArrayList" 도 가능 -->
+        <include refid="SELECTFILE"/>
+        AND id  IN
+            <foreach collection="array" item="e" separator="," open="(" close=")"> <!-- 중간중간 , 표시 와 '(' ')' 표시-->
+                #{e}
+            </foreach>
+        ORDER BY id ASC
+    </select>
+
+    <!-- 선택된 첨부파일들 DELETE -->
+    <delete id="deleteByIds" flushCache="true"
+            parameterType="java.util.ArrayList">
+        DELETE FROM t5_attachment
+        WHERE id IN (
+                        <foreach collection="array" item="item" separator=",">
+                            #{item}
+                        </foreach>
+            )
+    </delete>
+
+    <!-- 특정 첨부 파일(file)을 DB에서 삭제 -->
+    <delete id="delete" flushCache="true">
+        DELETE FROM t5_attachment WHERE id = #{id}
+    </delete>
+</mapper>
